@@ -9,12 +9,15 @@ import sounddevice as sd
 from captura import CapturaAudio
 from configuracion import ConfiguracionFiltro, FRECUENCIA_MUESTREO as FS
 from filtro import FiltroPasabandas
+from ecuacion import mostrar_ecuacion
 from graficas import Graficas
 from reproduccion import detener, ganancia_comun, reproducir
 
 
 def ejecutar(configuracion, segundos, dispositivo=None):
     filtro = FiltroPasabandas(configuracion)
+    if not mostrar_ecuacion(filtro.coeficientes, continuar=True):
+        return
     captura = CapturaAudio(segundos, dispositivo)
     graficas = Graficas(configuracion)
     originales, filtrados = [], []
@@ -28,9 +31,9 @@ def ejecutar(configuracion, segundos, dispositivo=None):
             return
         try:
             reproducir(audios[nombre], ganancia)
-            graficas.mensaje(f"Reproduciendo audio {nombre}.")
+            graficas.mensaje("Reproduciendo audio " + nombre + ".")
         except sd.PortAudioError as error:
-            graficas.mensaje(f"No se pudo reproducir: {error}")
+            graficas.mensaje("No se pudo reproducir: " + str(error))
 
     def parar(evento=None):
         detener()
@@ -62,7 +65,8 @@ def ejecutar(configuracion, segundos, dispositivo=None):
                 return False
             if hubo_audio:
                 graficas.actualizar(ventana_x, ventana_y)
-                graficas.mensaje(f"Grabando: {captura.recibidas / FS:.1f} / {segundos:g} s")
+                graficas.mensaje("Grabando: " + str(round(captura.recibidas / FS, 1))
+                                 + " / " + str(segundos) + " s")
         except (ValueError, ArithmeticError, sd.PortAudioError) as error:
             parar()
             graficas.mensaje(str(error))
@@ -92,7 +96,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Laboratorio: filtro de voz en tiempo real.")
     parser.add_argument("--fc1", type=float, default=1000)
     parser.add_argument("--fc2", type=float, default=3500)
-    parser.add_argument("--duracion", type=float, default=10, help="Segundos, de 1 a 120.")
+    parser.add_argument("--duracion", type=float, default=10, help="Duración de la captura en segundos.")
     parser.add_argument("--microfono", type=int, default=None, help="Índice del micrófono.")
     parser.add_argument("--dispositivos", action="store_true", help="Listar dispositivos de audio.")
     args = parser.parse_args()
@@ -101,8 +105,8 @@ if __name__ == "__main__":
         parser.exit()
     try:
         configuracion = ConfiguracionFiltro(args.fc1, args.fc2)
-        if not 1 <= args.duracion <= 120:
-            raise ValueError("La duración debe estar entre 1 y 120 segundos.")
+        if not 0 < args.duracion < float("inf"):
+            raise ValueError("La duración debe ser positiva y finita.")
         ejecutar(configuracion, args.duracion, args.microfono)
     except (ValueError, sd.PortAudioError) as error:
-        parser.exit(1, f"No se pudo iniciar: {error}\n")
+        parser.exit(1, "No se pudo iniciar: " + str(error) + "\n")

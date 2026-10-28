@@ -28,8 +28,9 @@ class Graficas:
         self.fig, (self.temporal, self.espectral) = plt.subplots(2, 1, figsize=(11, 7))
         self.fig.subplots_adjust(bottom=0.23, hspace=0.5)
         self.fig.suptitle(
-            f"Butterworth pasabandas | {configuracion.fc1:g}–{configuracion.fc2:g} Hz"
-            f" | BW: {configuracion.ancho_banda:g} Hz | fs: {FS} Hz"
+            "Butterworth pasabandas | " + str(configuracion.fc1) + "–"
+            + str(configuracion.fc2) + " Hz | BW: " + str(configuracion.ancho_banda)
+            + " Hz | fs: " + str(FS) + " Hz"
         )
         self.lineas_t, self.lineas_f = [], []
         for eje, lineas in [(self.temporal, self.lineas_t), (self.espectral, self.lineas_f)]:

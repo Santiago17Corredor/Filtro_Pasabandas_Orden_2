@@ -1,7 +1,4 @@
-"""Condiciones del laboratorio 1, tercer corte (página 30 de la guía)."""
-
 from dataclasses import dataclass
-from math import isfinite
 
 
 FRECUENCIA_MUESTREO = 44_100
@@ -17,8 +14,6 @@ class ConfiguracionFiltro:
     fc2: float = 3_500.0
 
     def __post_init__(self):
-        if not (isfinite(self.fc1) and isfinite(self.fc2)):
-            raise ValueError("Las frecuencias deben ser números finitos.")
         if not 0 < self.fc1 < self.fc2 <= FRECUENCIA_CORTE_MAXIMA:
             raise ValueError("Debe cumplirse: 0 < fc1 < fc2 <= 5000 Hz.")
         if not ANCHO_BANDA_MINIMO <= self.ancho_banda <= ANCHO_BANDA_MAXIMO:

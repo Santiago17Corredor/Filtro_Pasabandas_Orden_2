@@ -9,8 +9,10 @@ python -m pip install -r requirements.txt
 python main.py --fc1 1000 --fc2 3500 --duracion 10
 ```
 
-Al ejecutar empieza la captura del micrófono y se muestran las señales y sus
-espectros en vivo. Al terminar, los botones **Escuchar original** y **Escuchar
+Primero se imprimen los parámetros en la consola y aparece una ventana con la
+función de transferencia y la ecuación numérica en notación matemática. Pulsa
+**Iniciar grabación** para activar el micrófono y ver las señales y sus
+espectros en vivo. Cerrar la ventana de la ecuación cancela el inicio. Al terminar, los botones **Escuchar original** y **Escuchar
 filtrada** reproducen la misma grabación antes y después del filtro. **Detener**
 finaliza anticipadamente la captura o interrumpe la reproducción. Cerrar la
 ventana libera el micrófono y detiene el audio.
@@ -34,6 +36,7 @@ python main.py --microfono 1 --fc1 2000 --fc2 5000
 - `configuracion.py`: límites del enunciado y frecuencia de muestreo.
 - `captura.py`: audio del micrófono por bloques.
 - `filtro.py`: aplicación directa de la ecuación en diferencias, con memoria entre bloques.
+- `ecuacion.py`: presentación de la función de transferencia y la recurrencia numérica.
 - `graficas.py`: comparación temporal y espectral, con bandas de paso y rechazo marcadas.
 - `reproduccion.py`: reproducción de ambos audios con la misma ganancia.
 - `main.py`: selección de parámetros y coordinación.
@@ -55,3 +58,14 @@ muestra a muestra y muestra los resultados del audio.
 Se conserva `BW = wd2 - wd1`, la definición positiva del PDF. En la sustitución
 numérica inferior de la página 26, la resta aparece invertida; copiar ese signo
 produciría un filtro inestable.
+
+Para ver únicamente la ecuación, sin activar el micrófono:
+
+```powershell
+python filtro.py --fc1 1000 --fc2 3500
+```
+
+La presentación utiliza [Mathtext de Matplotlib](https://matplotlib.org/stable/tutorials/text/mathtext.html) para dibujar
+fracciones, subíndices y exponentes. Los números se redondean solo en la vista.
+Las validaciones de selección se limitan a los cortes y al ancho de banda
+del enunciado, y a una duración positiva y finita.
