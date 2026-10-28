@@ -14,9 +14,7 @@ def terminos(valores, variables):
     return texto
 
 
-def mostrar_ecuacion(coeficientes, continuar=False):
-    configuracion = coeficientes.configuracion
-    b, a = coeficientes.b, coeficientes.a
+def mostrar_ecuacion(configuracion, b, a, continuar=False):
     print("Corte inferior:", configuracion.fc1, "Hz")
     print("Corte superior:", configuracion.fc2, "Hz")
     print("Ancho de banda:", configuracion.ancho_banda, "Hz")

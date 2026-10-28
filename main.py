@@ -1,22 +1,23 @@
 """Grabar, filtrar, graficar en vivo y escuchar ambos audios."""
 
-import argparse
-
 import matplotlib.pyplot as plt
 import numpy as np
 import sounddevice as sd
 
 from captura import CapturaAudio
-from configuracion import ConfiguracionFiltro, FRECUENCIA_MUESTREO as FS
-from filtro import FiltroPasabandas
+from configuracion import DURACION_GRABACION, FRECUENCIA_MUESTREO as FS
+from filtro import disenar_filtro, crear_memoria, aplicar_ecuacion_diferencias
+from interfaz import seleccionar_frecuencias
 from ecuacion import mostrar_ecuacion
 from graficas import Graficas
 from reproduccion import detener, ganancia_comun, reproducir
 
 
 def ejecutar(configuracion, segundos, dispositivo=None):
-    filtro = FiltroPasabandas(configuracion)
-    if not mostrar_ecuacion(filtro.coeficientes, continuar=True):
+    # Elegir las frecuencias, diseñar una vez y mostrar la ecuación.
+    b, a = disenar_filtro(configuracion.fc1, configuracion.fc2)
+    memoria = crear_memoria()
+    if not mostrar_ecuacion(configuracion, b, a, continuar=True):
         return
     captura = CapturaAudio(segundos, dispositivo)
     graficas = Graficas(configuracion)
@@ -44,7 +45,7 @@ def ejecutar(configuracion, segundos, dispositivo=None):
         hubo_audio = False
         try:
             for bloque in captura.bloques():
-                salida = filtro.procesar(bloque)
+                salida = aplicar_ecuacion_diferencias(bloque, b, a, memoria)
                 originales.append(bloque)
                 filtrados.append(salida)
                 ventana_x = np.concatenate((ventana_x, bloque))[-8192:]
@@ -93,20 +94,9 @@ def ejecutar(configuracion, segundos, dispositivo=None):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Laboratorio: filtro de voz en tiempo real.")
-    parser.add_argument("--fc1", type=float, default=1000)
-    parser.add_argument("--fc2", type=float, default=3500)
-    parser.add_argument("--duracion", type=float, default=10, help="Duración de la captura en segundos.")
-    parser.add_argument("--microfono", type=int, default=None, help="Índice del micrófono.")
-    parser.add_argument("--dispositivos", action="store_true", help="Listar dispositivos de audio.")
-    args = parser.parse_args()
-    if args.dispositivos:
-        print(sd.query_devices())
-        parser.exit()
-    try:
-        configuracion = ConfiguracionFiltro(args.fc1, args.fc2)
-        if not 0 < args.duracion < float("inf"):
-            raise ValueError("La duración debe ser positiva y finita.")
-        ejecutar(configuracion, args.duracion, args.microfono)
-    except (ValueError, sd.PortAudioError) as error:
-        parser.exit(1, "No se pudo iniciar: " + str(error) + "\n")
+    configuracion = seleccionar_frecuencias()
+    if configuracion is not None:
+        try:
+            ejecutar(configuracion, DURACION_GRABACION)
+        except sd.PortAudioError as error:
+            print("No se pudo iniciar el audio:", error)
