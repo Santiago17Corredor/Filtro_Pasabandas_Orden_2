@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+grabaciones/
+resultados/
+.DS_Store
