@@ -1,21 +1,22 @@
 from captura import CapturaAudio
-from configuracion import DURACION_GRABACION
+from configuracion import DURACION_MAXIMA
 from filtro import aplicar_filtro
 from graficas import Graficas
 
 
-def ejecutar():
-    #prepara micro y memoria
-    captura = CapturaAudio(DURACION_GRABACION)
+def nueva_grabacion():
+    captura = CapturaAudio(DURACION_MAXIMA)
     memoria = [0.0] * 8
 
-    #se procesa cada bloque de audio
     def procesar_bloque(bloque):
         return aplicar_filtro(bloque, memoria)
 
-    #graficas en vivo y poder escuchar los audios original y filtrado
+    return captura, procesar_bloque
+
+
+def ejecutar():
     graficas = Graficas()
-    graficas.mostrar(captura, procesar_bloque)
+    graficas.mostrar(nueva_grabacion)
 
 
 if __name__ == "__main__":

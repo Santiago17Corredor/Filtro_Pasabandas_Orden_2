@@ -7,11 +7,11 @@ from configuracion import FRECUENCIA_MUESTREO, TAMANO_BLOQUE
 
 
 class CapturaAudio:
-    def __init__(self, segundos, dispositivo=None):
+    def __init__(self, segundos_maximos, dispositivo=None):
         self.cola = Queue()
         self.terminada = Event()
         self.advertencias = set()
-        self.total = round(segundos * FRECUENCIA_MUESTREO)
+        self.total = round(segundos_maximos * FRECUENCIA_MUESTREO)
         self.recibidas = 0
         self.stream = sd.InputStream(
             samplerate=FRECUENCIA_MUESTREO, channels=1, dtype="float32",
@@ -38,6 +38,9 @@ class CapturaAudio:
                 yield self.cola.get_nowait()
             except Empty:
                 return
+
+    def alcanzo_tope(self):
+        return self.recibidas >= self.total
 
     def detener(self):
         if not self.stream.closed:
