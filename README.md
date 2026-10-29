@@ -12,7 +12,7 @@ la captura o la reproducción.
 
 - `captura.py`: recibe el audio del micrófono.
 - `filtro.py`: aplica directamente la ecuación en diferencias.
-- `graficas.py`: compara las señales y sus espectros.
+- `graficas.py`: actualiza las gráficas en vivo y maneja los botones de audio.
 - `reproduccion.py`: reproduce los audios con una ganancia común.
 - `configuracion.py`: valores fijos de la captura y la banda.
-- `main.py`: conecta la captura, el filtro y las salidas.
+- `main.py`: prepara la captura, define cómo filtrar cada bloque y abre la ventana.

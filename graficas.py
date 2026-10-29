@@ -2,7 +2,10 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import sounddevice as sd
 from matplotlib.widgets import Button
+
+from reproduccion import detener, ganancia_comun, reproducir
 
 from configuracion import (
     FRECUENCIA_CORTE_INFERIOR as FC1,
@@ -74,3 +77,98 @@ class Graficas:
     def mensaje(self, texto):
         self.estado.set_text(texto)
         self.fig.canvas.draw_idle()
+
+
+    def mostrar(self, captura, procesar_bloque):
+        # Conectar la captura, el procesamiento y los botones de la ventana.
+        self.captura = captura
+        self.procesar_bloque = procesar_bloque
+        self.originales = []
+        self.filtrados = []
+        self.ventana_original = np.array([])
+        self.ventana_filtrada = np.array([])
+        self.audios = {}
+        self.ganancia = 1.0
+
+        self.original.on_clicked(self.escuchar_original)
+        self.filtrada.on_clicked(self.escuchar_filtrada)
+        self.detener.on_clicked(self.parar_audio)
+        self.fig.canvas.mpl_connect("close_event", self.cerrar)
+
+        self.temporizador = self.fig.canvas.new_timer(interval=100)
+        self.temporizador.add_callback(self.actualizar_audio)
+        try:
+            self.captura.iniciar()
+            self.temporizador.start()
+            plt.show()
+        except KeyboardInterrupt:
+            print("Ejecución detenida.")
+        except sd.PortAudioError as error:
+            print("No se pudo iniciar el audio:", error)
+        finally:
+            self.cerrar()
+            plt.close(self.fig)
+
+    def actualizar_audio(self):
+        # Leer los bloques disponibles, filtrarlos y renovar las gráficas.
+        hubo_audio = False
+        try:
+            for bloque in self.captura.bloques():
+                salida = self.procesar_bloque(bloque)
+                self.originales.append(bloque)
+                self.filtrados.append(salida)
+                self.ventana_original = np.concatenate((self.ventana_original, bloque))[-8192:]
+                self.ventana_filtrada = np.concatenate((self.ventana_filtrada, salida))[-8192:]
+                hubo_audio = True
+
+            if self.captura.terminada.is_set() and self.captura.cola.empty():
+                self.finalizar_grabacion()
+                return False
+
+            if hubo_audio:
+                self.actualizar(self.ventana_original, self.ventana_filtrada)
+                transcurrido = round(self.captura.recibidas / FS, 1)
+                duracion = round(self.captura.total / FS, 1)
+                self.mensaje("Grabando: " + str(transcurrido) + " / " + str(duracion) + " s")
+        except (ValueError, ArithmeticError, sd.PortAudioError) as error:
+            self.parar_audio()
+            self.mensaje(str(error))
+            return False
+
+    def finalizar_grabacion(self):
+        # Reunir la grabación completa para analizarla y escucharla.
+        self.captura.detener()
+        if self.originales:
+            self.audios["original"] = np.concatenate(self.originales)
+            self.audios["filtrado"] = np.concatenate(self.filtrados)
+            self.ganancia = ganancia_comun(self.audios["original"], self.audios["filtrado"])
+            self.actualizar(self.audios["original"], self.audios["filtrado"])
+            self.mensaje("Grabación terminada. Usa los botones para comparar los audios.")
+        else:
+            self.mensaje("La captura terminó sin muestras de audio.")
+        if self.captura.advertencias:
+            self.mensaje("Captura con incidencias: " + "; ".join(self.captura.advertencias))
+
+    def escuchar_original(self, evento):
+        self.escuchar("original")
+
+    def escuchar_filtrada(self, evento):
+        self.escuchar("filtrado")
+
+    def escuchar(self, nombre):
+        if nombre not in self.audios:
+            self.mensaje("Espera a que termine la grabación o pulsa Detener.")
+            return
+        try:
+            reproducir(self.audios[nombre], self.ganancia)
+            self.mensaje("Reproduciendo audio " + nombre + ".")
+        except sd.PortAudioError as error:
+            self.mensaje("No se pudo reproducir: " + str(error))
+
+    def parar_audio(self, evento=None):
+        detener()
+        self.captura.detener()
+
+    def cerrar(self, evento=None):
+        self.temporizador.stop()
+        self.parar_audio()
