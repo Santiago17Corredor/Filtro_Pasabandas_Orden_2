@@ -1,4 +1,3 @@
-"""Reproducción con una ganancia común para conservar la comparación."""
 
 import numpy as np
 import sounddevice as sd

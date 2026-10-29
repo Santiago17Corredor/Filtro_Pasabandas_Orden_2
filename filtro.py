@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def aplicar_filtro(audio, memoria):
     # Ecuación fija: banda de 300 a 3300 Hz, muestreo de 44100 Hz.
     salida = np.zeros(len(audio))
@@ -9,7 +8,7 @@ def aplicar_filtro(audio, memoria):
     for n in range(len(audio)):
         x0 = float(audio[n])
         y0 = (
-            0.03478603744173827 * x0
+              0.03478603744173827 * x0
             - 0.06957207488347654 * x2
             + 0.03478603744173827 * x4
             + 3.3727934785213742 * y1
@@ -21,6 +20,6 @@ def aplicar_filtro(audio, memoria):
         x4, x3, x2, x1 = x3, x2, x1, x0
         y4, y3, y2, y1 = y3, y2, y1, y0
 
-    # Conservar las muestras anteriores para el siguiente bloque.
+    # actualizar memoria
     memoria[:] = [x1, x2, x3, x4, y1, y2, y3, y4]
     return salida

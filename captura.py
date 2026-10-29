@@ -1,5 +1,3 @@
-"""Captura mono a 44 100 Hz; el micrófono entrega los bloques a una cola."""
-
 from queue import Empty, Queue
 from threading import Event
 

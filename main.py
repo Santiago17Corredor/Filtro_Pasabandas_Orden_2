@@ -5,15 +5,15 @@ from graficas import Graficas
 
 
 def ejecutar():
-    # 1. Preparar el micrófono y la memoria del filtro.
+    #prepara micro y memoria
     captura = CapturaAudio(DURACION_GRABACION)
     memoria = [0.0] * 8
 
-    # 2. Cada bloque de audio pasa por la misma ecuación y memoria.
+    #se procesa cada bloque de audio
     def procesar_bloque(bloque):
         return aplicar_filtro(bloque, memoria)
 
-    # 3. Grabar, mostrar los resultados en vivo y permitir escuchar los audios.
+    #graficas en vivo y poder escuchar los audios original y filtrado
     graficas = Graficas()
     graficas.mostrar(captura, procesar_bloque)
 

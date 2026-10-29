@@ -1,5 +1,3 @@
-"""Comparación temporal y espectral con la misma escala para ambos audios."""
-
 import matplotlib.pyplot as plt
 import numpy as np
 import sounddevice as sd
