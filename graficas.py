@@ -4,7 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.widgets import Button
 
-from configuracion import FRECUENCIA_MUESTREO as FS
+from configuracion import (
+    FRECUENCIA_CORTE_INFERIOR as FC1,
+    FRECUENCIA_CORTE_SUPERIOR as FC2,
+    FRECUENCIA_MUESTREO as FS,
+    ANCHO_BANDA,
+)
 
 
 def espectro(audio):
@@ -24,12 +29,12 @@ def espectro(audio):
 
 
 class Graficas:
-    def __init__(self, configuracion):
+    def __init__(self):
         self.fig, (self.temporal, self.espectral) = plt.subplots(2, 1, figsize=(11, 7))
         self.fig.subplots_adjust(bottom=0.23, hspace=0.5)
         self.fig.suptitle(
-            "Butterworth pasabandas | " + str(configuracion.fc1) + "–"
-            + str(configuracion.fc2) + " Hz | BW: " + str(configuracion.ancho_banda)
+            "Butterworth pasabandas | " + str(FC1) + "–"
+            + str(FC2) + " Hz | BW: " + str(ANCHO_BANDA)
             + " Hz | fs: " + str(FS) + " Hz"
         )
         self.lineas_t, self.lineas_f = [], []
@@ -43,10 +48,10 @@ class Graficas:
             xlabel="Frecuencia (Hz)", ylabel="Potencia (dBFS/Hz)",
             xlim=(0, FS / 2), ylim=(-140, 0), title="Espectros con la misma referencia",
         )
-        self.espectral.axvspan(0, configuracion.fc1, color="gray", alpha=0.12)
-        self.espectral.axvspan(configuracion.fc1, configuracion.fc2, color="green", alpha=0.12)
-        self.espectral.axvspan(configuracion.fc2, FS / 2, color="gray", alpha=0.12)
-        for frecuencia in (configuracion.fc1, configuracion.fc2):
+        self.espectral.axvspan(0, FC1, color="gray", alpha=0.12)
+        self.espectral.axvspan(FC1, FC2, color="green", alpha=0.12)
+        self.espectral.axvspan(FC2, FS / 2, color="gray", alpha=0.12)
+        for frecuencia in (FC1, FC2):
             self.espectral.axvline(frecuencia, color="green", linestyle="--", linewidth=0.8)
         self.espectral.text(0.02, 0.05, "Verde: paso | Gris: rechazo", transform=self.espectral.transAxes)
         self.original = Button(self.fig.add_axes([0.13, 0.09, 0.22, 0.055]), "Escuchar original")

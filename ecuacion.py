@@ -3,6 +3,13 @@
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 
+from configuracion import (
+    FRECUENCIA_CORTE_INFERIOR as FC1,
+    FRECUENCIA_CORTE_SUPERIOR as FC2,
+    FRECUENCIA_MUESTREO as FS,
+    ANCHO_BANDA,
+)
+
 
 def terminos(valores, variables):
     texto = ""
@@ -14,19 +21,19 @@ def terminos(valores, variables):
     return texto
 
 
-def mostrar_ecuacion(configuracion, b, a, continuar=False):
-    print("Corte inferior:", configuracion.fc1, "Hz")
-    print("Corte superior:", configuracion.fc2, "Hz")
-    print("Ancho de banda:", configuracion.ancho_banda, "Hz")
-    print("Frecuencia de muestreo:", configuracion.fs, "Hz")
+def mostrar_ecuacion(b, a, continuar=False):
+    print("Corte inferior:", FC1, "Hz")
+    print("Corte superior:", FC2, "Hz")
+    print("Ancho de banda:", ANCHO_BANDA, "Hz")
+    print("Frecuencia de muestreo:", FS, "Hz")
 
     fig = plt.figure(figsize=(12, 7))
     fig.canvas.manager.set_window_title("Ecuación del filtro")
     fig.text(0.06, 0.92, "Filtro Butterworth pasabandas", fontsize=21, weight="bold")
     parametros = (
-        r"$f_{c1}=" + str(configuracion.fc1) + r"\ \mathrm{Hz},\quad f_{c2}="
-        + str(configuracion.fc2) + r"\ \mathrm{Hz},\quad f_s="
-        + str(configuracion.fs) + r"\ \mathrm{Hz}$"
+        r"$f_{c1}=" + str(FC1) + r"\ \mathrm{Hz},\quad f_{c2}="
+        + str(FC2) + r"\ \mathrm{Hz},\quad f_s="
+        + str(FS) + r"\ \mathrm{Hz}$"
     )
     fig.text(0.06, 0.84, parametros, fontsize=17)
     fig.text(0.06, 0.73, "Función de transferencia digital", fontsize=13)

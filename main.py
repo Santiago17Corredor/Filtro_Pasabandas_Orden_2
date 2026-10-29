@@ -6,21 +6,19 @@ import sounddevice as sd
 
 from captura import CapturaAudio
 from configuracion import DURACION_GRABACION, FRECUENCIA_MUESTREO as FS
-from filtro import disenar_filtro, crear_memoria, aplicar_ecuacion_diferencias
-from interfaz import seleccionar_frecuencias
+from filtro import b, a, crear_memoria, aplicar_ecuacion_diferencias
 from ecuacion import mostrar_ecuacion
 from graficas import Graficas
 from reproduccion import detener, ganancia_comun, reproducir
 
 
-def ejecutar(configuracion, segundos, dispositivo=None):
-    # Elegir las frecuencias, diseñar una vez y mostrar la ecuación.
-    b, a = disenar_filtro(configuracion.fc1, configuracion.fc2)
+def ejecutar(segundos=DURACION_GRABACION, dispositivo=None):
+    # Los coeficientes ya están definidos; iniciar la memoria en cero.
     memoria = crear_memoria()
-    if not mostrar_ecuacion(configuracion, b, a, continuar=True):
+    if not mostrar_ecuacion(b, a, continuar=True):
         return
     captura = CapturaAudio(segundos, dispositivo)
-    graficas = Graficas(configuracion)
+    graficas = Graficas()
     originales, filtrados = [], []
     ventana_x = ventana_y = np.array([])
     audios = {}
@@ -45,7 +43,7 @@ def ejecutar(configuracion, segundos, dispositivo=None):
         hubo_audio = False
         try:
             for bloque in captura.bloques():
-                salida = aplicar_ecuacion_diferencias(bloque, b, a, memoria)
+                salida = aplicar_ecuacion_diferencias(bloque, memoria)
                 originales.append(bloque)
                 filtrados.append(salida)
                 ventana_x = np.concatenate((ventana_x, bloque))[-8192:]
@@ -94,9 +92,7 @@ def ejecutar(configuracion, segundos, dispositivo=None):
 
 
 if __name__ == "__main__":
-    configuracion = seleccionar_frecuencias()
-    if configuracion is not None:
-        try:
-            ejecutar(configuracion, DURACION_GRABACION)
-        except sd.PortAudioError as error:
-            print("No se pudo iniciar el audio:", error)
+    try:
+        ejecutar()
+    except sd.PortAudioError as error:
+        print("No se pudo iniciar el audio:", error)
