@@ -6,17 +6,13 @@ import sounddevice as sd
 
 from captura import CapturaAudio
 from configuracion import DURACION_GRABACION, FRECUENCIA_MUESTREO as FS
-from filtro import b, a, crear_memoria, aplicar_ecuacion_diferencias
-from ecuacion import mostrar_ecuacion
+from filtro import aplicar_filtro
 from graficas import Graficas
 from reproduccion import detener, ganancia_comun, reproducir
 
 
 def ejecutar(segundos=DURACION_GRABACION, dispositivo=None):
-    # Los coeficientes ya están definidos; iniciar la memoria en cero.
-    memoria = crear_memoria()
-    if not mostrar_ecuacion(b, a, continuar=True):
-        return
+    memoria = [0.0] * 8
     captura = CapturaAudio(segundos, dispositivo)
     graficas = Graficas()
     originales, filtrados = [], []
@@ -43,7 +39,7 @@ def ejecutar(segundos=DURACION_GRABACION, dispositivo=None):
         hubo_audio = False
         try:
             for bloque in captura.bloques():
-                salida = aplicar_ecuacion_diferencias(bloque, memoria)
+                salida = aplicar_filtro(bloque, memoria)
                 originales.append(bloque)
                 filtrados.append(salida)
                 ventana_x = np.concatenate((ventana_x, bloque))[-8192:]
